@@ -1,7 +1,9 @@
 window.onload = function() {
+	let test_image = document.getElementById("test-image");
 	let main_image = document.getElementById("main-image");
 	let manipulation_image = document.getElementById("manipulation-image")
 
+	let test_cxt = test_image.getContext('2d');
 	let main_cxt = main_image.getContext('2d');
 	let manipulation_ctx = manipulation_image.getContext('2d');
 
@@ -11,24 +13,24 @@ window.onload = function() {
 	image.onload = function(){
 		main_cxt.drawImage(image, 0, 0);
 		
-		for(let y = 0; y < main_image.width / 10; y++){
-			for (let x = 0; x < main_image.height / 10; x++) {
+		for(let y = 0; y < 1280 / 20; y++){
+			for (let x = 0; x < 700 / 20; x++) {
 				// main 캔버스의 이미지를 데이터로 반환
 				let imageData = main_cxt.getImageData(12.5 + y * 25, 12.5 + x * 25, 10, 10);
 
 				let avg_rgb = getAverageRGB(imageData);
 
-				manipulation_ctx.fillStyle = 'rgb(' + avg_rgb.r + ', ' + avg_rgb.g + ',' + avg_rgb.b + ')';
+				test_cxt.fillStyle = 'rgb(' + avg_rgb.r + ', ' + avg_rgb.g + ',' + avg_rgb.b + ')';
 				
-				manipulation_ctx.beginPath();
-				manipulation_ctx.arc(12.5 + y * 25, 12.5 + x * 25, 10, 0, Math.PI * 2, true);
-				manipulation_ctx.stroke();
-				manipulation_ctx.fill()
+				test_cxt.beginPath();
+				test_cxt.arc(12.5 + y * 25, 12.5 + x * 25, 10, 0, Math.PI * 2, true);
+				test_cxt.stroke();
+				test_cxt.fill();
 			}
 		}	
 	};
 
-	image.src = "sample.png";
+	image.src = "http://127.0.0.1:8000/web_cam/";
 };
 
 // 영역 rgb 평균값 
