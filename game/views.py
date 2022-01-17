@@ -19,7 +19,7 @@ class VideoCamera(object):
         self.video.release()
 
     def get_frame(self):
-        image = img_processing(self.frame, debug=False)
+        image = self.img_processing(self.frame, debug=False)
         ret, jpeg = cv2.imencode('.jpg', image)
         return jpeg.tobytes()
 
@@ -27,22 +27,23 @@ class VideoCamera(object):
         while True:
             (self.grabbed, self.frame) = self.video.read()
 
-def make_mask_image(img_bgr):
-    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_RGB2HSV)
-    low = (0, 30, 0)
-    high = (15, 255, 255)
-    img_mask = cv2.inRange(img_hsv, low, high)
-    return img_mask
+    def make_mask_image(self, img_bgr):
+        img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+        low = (0, 30, 0)
+        high = (15, 255, 255)
+        img_mask = cv2.inRange(img_hsv, low, high)
+        
+        return img_mask
 
-def img_processing(img_bgr, debug):
-  # STEP 1
-  img_binary = make_mask_image(img_bgr)
+    def img_processing(self, img_bgr, debug):
+      # STEP 1 피부 검출
+      img_binary = self.make_mask_image(img_bgr)
 
-  # STEP 2
-  kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-  img_binary = cv2.morphologyEx(img_binary, cv2.MORPH_CLOSE, kernel, 1)
+      # STEP 2 모폴로지 침식 연산
+      kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+      img_binary = cv2.morphologyEx(img_binary, cv2.MORPH_CLOSE, kernel, 1)
 
-  return img_binary
+      return img_binary
 
 def gen(camera):
     while True:
