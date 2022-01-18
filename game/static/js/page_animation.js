@@ -16,12 +16,23 @@ class App{
         window.requestAnimationFrame(this.animate.bind(this));
     }
 
-    animate(t) { // 애니메이션을 실제로 구동시키는 함수
-        window.requestAnimationFrame(this.animate.bind(this));
-
-        this.mainCtx.clearRect(0, 0, width, height); // 공이 이동한 이전 프레임을 지움
+    async animate(t) { // 애니메이션을 실제로 구동시키는 함수    
+        // 이전 프레임을 지움
+        this.mainCtx.clearRect(0, 0, width, height); 
         this.camCtx.clearRect(0, 0, width, height);
+        
+        // 화면을 그림
+        this.map.drawCamImg(this.mainCtx, this.camCtx);
 
-        this.map.drawCamImg(width, height);
+        await this.sleep(); 
+        window.requestAnimationFrame(this.animate.bind(this));
     }
+
+    sleep() { 
+        return new Promise(requestAnimationFrame); 
+    }
+}
+
+window.onload = () => {
+    new App();
 }

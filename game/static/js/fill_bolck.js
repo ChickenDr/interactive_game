@@ -4,30 +4,26 @@ export class Draw{
 		this.height = height;
 	}
 
-	drawCamImg(camCtx, mainCtx) {
+	drawCamImg(mainCtx, camCtx) {
 		let image = new Image(); // Image 객체 생성
-		
-		// 이미지 로드 완료시 동작 할 함수
-		image.onload = function(){
-			camCtx.drawImage(image, 0, 0);
-			
-			for(let y = 0; y < this.width / 10; y++){
-				for (let x = 0; x < this.height / 10; x++) {
-					// cam 캔버스의 이미지를 데이터로 반환
-					let imageData = camCtx.getImageData(5 + y * 10, 5 + x * 10, 5, 5);
-	
-					let avgRgb = getAverageRGB(imageData);
-	
-					mainCtx.fillStyle = 'rgb(' + avgRgb.r + ', ' + avgRgb.g + ',' + avgRgb.b + ')';
-					
-					mainCtx.beginPath();
-					mainCtx.arc(5 + y * 10, 5 + x * 10, 5, 0, Math.PI * 2, true);
-					mainCtx.fill();
-				}
-			}	
-		};
-	
 		image.src = "http://127.0.0.1:8000/web_cam/";
+		
+		camCtx.drawImage(image, 0, 0);
+		
+		for(let y = 0; y < this.width / 10; y++){
+			for (let x = 0; x < this.height / 10; x++) {
+				// cam 캔버스의 이미지를 데이터로 반환
+				let imageData = camCtx.getImageData(5 + y * 10, 5 + x * 10, 5, 5);
+
+				let avgRgb = this.getAverageRGB(imageData);
+
+				mainCtx.fillStyle = 'rgb(' + avgRgb.r + ', ' + avgRgb.g + ',' + avgRgb.b + ')';
+				
+				mainCtx.beginPath();
+				mainCtx.arc(5 + y * 10, 5 + x * 10, 5, 0, Math.PI * 2, true);
+				mainCtx.fill();
+			}
+		}
 	}
 
 	getAverageRGB(imageData){
