@@ -9,7 +9,10 @@ export class Draw{
 		image.src = "http://127.0.0.1:8000/web_cam/";
 		
 		camCtx.drawImage(image, 0, 0);
-		
+		// this.drawCamImgToDot(mainCtx, camCtx);
+	}
+
+	drawCamImgToDot(mainCtx, camCtx){
 		for(let y = 0; y < this.width / 10; y++){
 			for (let x = 0; x < this.height / 10; x++) {
 				// cam 캔버스의 이미지를 데이터로 반환
@@ -22,6 +25,7 @@ export class Draw{
 				mainCtx.beginPath();
 				mainCtx.arc(5 + y * 10, 5 + x * 10, 5, 0, Math.PI * 2, true);
 				mainCtx.fill();
+				mainCtx.closePath();
 			}
 		}
 	}

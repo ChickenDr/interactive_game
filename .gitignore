@@ -1,5 +1,6 @@
 __pycache__
 migrations
 .DS_Store
-test
+db.sqlite3
+tmp
 db.sqlite3
