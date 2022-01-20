@@ -5,8 +5,7 @@ var width = 1280;
 var height = 700;
 
 var gravity = 1; // 1g
-var density = 50; // 50kg
-
+var fps = 1 / 60;
 
 class App{
     constructor(){
@@ -37,17 +36,39 @@ class App{
         this.map.drawCamImg(this.mainCtx, this.camCtx);
         
         // 공 그리기
-        for(let i = 0; i < this.balls.length; i++){
-            this.balls[i].drawBallImg(this.camCtx);
+        for(let ballCount = 0; ballCount < this.balls.length; ballCount++){
+            this.ballPhysics(ballCount);
         }
-
-
+        
         await this.sleep(); 
         window.requestAnimationFrame(this.animate.bind(this));
     }
-
+    
     sleep() { 
         return new Promise(requestAnimationFrame); 
+    }
+    
+    ballPhysics(ballCount){
+        if(!this.mouse.isDown || ballCount != this.balls.length - 1){
+            // 항력 계산
+            let fp = this.balls[ballCount].calculateDrag();
+            
+			fp.fx = (isNaN(fp.fx) ? 0 : fp.fx);
+			fp.fy = (isNaN(fp.fy) ? 0 : fp.fy);
+            
+			//Calculating the accleration of the ball
+			//F = ma or a = F/m
+			let ax = fp.fx / this.balls[ballCount].getMess();
+			let ay = (9.81 * gravity) + (fp.fy / this.balls[ballCount].getMess());
+            
+			// 공이 떨어지는 속도
+            this.balls[ballCount].updateVelocity(ax, ay, fps);
+            
+			// 공위치 업데이트
+            this.balls[ballCount].updatePosition(fps)
+		}
+        // 공 그리기
+        this.balls[ballCount].drawBallImg(this.camCtx);
     }
 
     mouseDown(e){
@@ -63,17 +84,13 @@ class App{
             rgb.g = 75 + Math.floor(Math.random() * (max - min) - min);
             rgb.b = 75 + Math.floor(Math.random() * (max - min) - min);
 
-            this.balls.push(new Ball(this.mouse.x, this.mouse.y, 10, 0.7, 10, "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")"));
+            this.balls.push(new Ball(this.mouse.x, this.mouse.y, 10, 0.1, 10, "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")"));
         }
     }
 
     mouseUp(e){
         if (e.which == 1) {
             this.mouse.isDown = false;
-
-            // Ball.velocity = {x: 0, y: 0} => m/s
-            // position - mouse.* / 10
-            this.balls[this.balls.length - 1].updateVelocity(this.mouse.x, this.mouse.y);
         }
     }
 
@@ -105,6 +122,7 @@ function collisionWall(ball){
 		ball.position.y = ball.radius;
 	}
 }
+
 function collisionBall(b1){
 	for(var i = 0; i < balls.length; i++){
 		var b2 = balls[i];

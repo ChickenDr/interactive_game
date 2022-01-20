@@ -22,12 +22,44 @@ export class Ball{
         this.velocity.y = (this.position.y - y) / 10;
     }
 
-    getPositionX(x){
+    updateVelocity(ax, ay, fps){
+        this.velocity.x += ax * fps;
+        this.velocity.y += ay * fps;
+    }
+
+    updatePosition(fps){
+        this.position.x += this.velocity.x * fps * 100;
+        this.position.y += this.velocity.y * fps * 100;
+    }
+
+    getMess(){
+        return this.mass;
+    }
+
+    getVelocityX(){
+        return this.velocity.x;
+    }
+    
+    getVelocityY(){
+        return this.velocity.y;
+    }
+
+    getPositionX(){
         return this.position.x;
     }
 
-    getPositionY(y){
+    getPositionY(){
         return this.position.y;
     }
+    
+    calculateDrag(){
+        let fp = {fx : 0, fy : 0};
+        // 항력 계산 =  -0.5 * 공기저항 계수 * 공기 밀도 * v^2 * rho 
+        fp.fx = -0.5 * 0.47 * 1.22 * this.area * this.velocity.x * this.velocity.x * (this.velocity.x / Math.abs(this.velocity.x));
+        fp.fy = -0.5 * 0.47 * 1.22 * this.area * this.velocity.y * this.velocity.y * (this.velocity.y / Math.abs(this.velocity.y));
+        
+        return fp;
+    }
+
 }
 
