@@ -2,14 +2,14 @@ export class Draw{
 	constructor(width, height){
 		this.width = width;
 		this.height = height;
+		this.image = new Image();
 	}
 
-	drawCamImg(mainCtx, camCtx) {
-		let image = new Image(); // Image 객체 생성
-		image.src = "http://127.0.0.1:8000/web_cam/";
+	drawCamImg(dotCtx, camCtx) {
+		this.image.src = "http://127.0.0.1:8000/web_cam/";
 		
-		camCtx.drawImage(image, 0, 0);
-		// this.drawCamImgToDot(mainCtx, camCtx);
+		camCtx.drawImage(this.image, 0, 0);
+		this.drawCamImgToDot(dotCtx, camCtx);
 	}
 
 	drawCamImgToDot(mainCtx, camCtx){
