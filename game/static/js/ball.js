@@ -9,14 +9,14 @@ export class Ball{
         this.area = (Math.PI * radius * radius) / 10000;
 
         this.gravity = 1;
-        this.fps = 1 / 60;
+        this.fps = 1 / 60; // t = 1 / fps
     }
 
-    ballPhysics(mouse, ballCount, ballLength, camCtx, width, height){
-        if(!mouse || ballCount != ballLength){ // 마우스가 눌려 있지 않거나 모든 공을 순회 하지 못했을 때
+    ballPhysics(mouse, ballCount, camCtx, width, height, balls){
+        if(!mouse || ballCount != balls.length - 1){ // 마우스가 눌려 있지 않거나 모든 공을 순회 하지 못했을 때
             // 항력 계산 =  -0.5 * 공기저항 계수 * 공기 밀도 * v^2 * rho 
-            let fx = -0.5 * 0.47 * 1.22 * this.area * this.velocity.x * this.velocity.x * (this.velocity.x / Math.abs(this.velocity.x));
-            let fy = -0.5 * 0.47 * 1.22 * this.area * this.velocity.y * this.velocity.y * (this.velocity.y / Math.abs(this.velocity.y));
+            let fx = -0.5 * 1.22 * this.area * this.velocity.x * this.velocity.x * (this.velocity.x / Math.abs(this.velocity.x));
+            let fy = -0.5 * 1.22 * this.area * this.velocity.y * this.velocity.y * (this.velocity.y / Math.abs(this.velocity.y));
         
 			fx = (isNaN(fx) ? 0 : fx);
 			fy = (isNaN(fy) ? 0 : fy);
@@ -26,11 +26,11 @@ export class Ball{
 			let ax = fx / this.mass;
 			let ay = (9.81 * this.gravity) + (fy / this.mass);
             
-			// 공이 떨어지는 속도
+			// 공이 떨어지는 속도 v = v + a(가속도) * t
             this.velocity.x += ax * this.fps;
             this.velocity.y += ay * this.fps;
             
-			// 공위치 업데이트
+			// 공위치 업데이트 p = p + v * t
             this.position.x += this.velocity.x * this.fps * 100;
             this.position.y += this.velocity.y * this.fps * 100;
 		}
@@ -39,6 +39,7 @@ export class Ball{
 
         // 벽 충돌
         this.collisionWall(width, height);
+        this.collisionBall(balls);
     }
 
     drawBallImg(canvasCtx){
@@ -68,46 +69,45 @@ export class Ball{
         }
     }
 
-    collisionBall(b1){
-        for(var i = 0; i < balls.length; i++){
-            var b2 = balls[i];
-            if(b1.position.x != b2.position.x && b1.position.y != b2.position.y){
+    collisionBall(balls){
+        for(let i = 0; i < balls.length; i++){
+            let ball = balls[i];
+            if(this != ball){
                 //quick check for potential collisions using AABBs
-                if(b1.position.x + b1.radius + b2.radius > b2.position.x
-                    && b1.position.x < b2.position.x + b1.radius + b2.radius
-                    && b1.position.y + b1.radius + b2.radius > b2.position.y
-                    && b1.position.y < b2.position.y + b1.radius + b2.radius){
+                if(this.position.x + this.radius + ball.radius > ball.position.x
+                    && this.position.x < ball.position.x + this.radius + ball.radius
+                    && this.position.y + this.radius + ball.radius > ball.position.y
+                    && this.position.y < ball.position.y + this.radius + ball.radius){
                     
                     //pythagoras 
-                    var distX = b1.position.x - b2.position.x;
-                    var distY = b1.position.y - b2.position.y;
-                    var d = Math.sqrt((distX) * (distX) + (distY) * (distY));
+                    let distX = this.position.x - ball.position.x;
+                    let distY = this.position.y - ball.position.y;
+                    let d = Math.sqrt((distX) * (distX) + (distY) * (distY));
         
                     //checking circle vs circle collision 
-                    if(d < b1.radius + b2.radius){
-                        var nx = (b2.position.x - b1.position.x) / d;
-                        var ny = (b2.position.y - b1.position.y) / d;
-                        var p = 2 * (b1.velocity.x * nx + b1.velocity.y * ny - b2.velocity.x * nx - b2.velocity.y * ny) / (b1.mass + b2.mass);
+                    if(d < this.radius + ball.radius){
+                        let nx = (ball.position.x - this.position.x) / d;
+                        let ny = (ball.position.y - this.position.y) / d;
+                        let p = 2 * (this.velocity.x * nx + this.velocity.y * ny - ball.velocity.x * nx - ball.velocity.y * ny) / (this.mass + ball.mass);
     
                         // calulating the point of collision 
-                        var colPointX = ((b1.position.x * b2.radius) + (b2.position.x * b1.radius)) / (b1.radius + b2.radius);
-                        var colPointY = ((b1.position.y * b2.radius) + (b2.position.y * b1.radius)) / (b1.radius + b2.radius);
+                        let colPointX = ((this.position.x * ball.radius) + (ball.position.x * this.radius)) / (this.radius + ball.radius);
+                        let colPointY = ((this.position.y * ball.radius) + (ball.position.y * this.radius)) / (this.radius + ball.radius);
                         
                         //stoping overlap 
-                        b1.position.x = colPointX + b1.radius * (b1.position.x - b2.position.x) / d;
-                        b1.position.y = colPointY + b1.radius * (b1.position.y - b2.position.y) / d;
-                        b2.position.x = colPointX + b2.radius * (b2.position.x - b1.position.x) / d;
-                        b2.position.y = colPointY + b2.radius * (b2.position.y - b1.position.y) / d;
+                        this.position.x = colPointX + this.radius * (this.position.x - ball.position.x) / d;
+                        this.position.y = colPointY + this.radius * (this.position.y - ball.position.y) / d;
+                        ball.position.x = colPointX + ball.radius * (ball.position.x - this.position.x) / d;
+                        ball.position.y = colPointY + ball.radius * (ball.position.y - this.position.y) / d;
     
                         //updating velocity to reflect collision 
-                        b1.velocity.x -= p * b1.mass * nx;
-                        b1.velocity.y -= p * b1.mass * ny;
-                        b2.velocity.x += p * b2.mass * nx;
-                        b2.velocity.y += p * b2.mass * ny;
+                        this.velocity.x -= p * this.mass * nx;
+                        this.velocity.y -= p * this.mass * ny;
+                        ball.velocity.x += p * ball.mass * nx;
+                        ball.velocity.y += p * ball.mass * ny;
                     }
                 }
             }
         }
     }
 }
-
