@@ -6,24 +6,19 @@ var height = 700;
 
 class App{
     constructor(){
-        this.streaming = false;
         this.mouse = {x: 0, y: 0, isDown: false}; // 마우스 포지션, 눌려있는지
         this.balls = [];
 
-        this.video = document.getElementById("video");
-        
         this.camCanvas = document.getElementById("cam-image"); // 캠
         this.camCtx = this.camCanvas.getContext('2d');
         
         // evnet
-        this.video.oncanplay = this.streamCam.bind(this); // 캠 스트리밍
         this.camCanvas.onmousedown = this.mouseDown.bind(this); // 마우스 누름
         this.camCanvas.onmouseup = this.mouseUp.bind(this); // 마우스 누르다 땜
         this.camCanvas.onmousemove = this.getMousePosition.bind(this); // 마우스 위치
         
-        // this.map = new Cam(this.camCanvas.width, this.camCanvas.height, this.camCanvas);
-        
-        this.startCamera();
+        this.map = new Cam(this.camCanvas.width, this.camCanvas.height);
+
         window.requestAnimationFrame(this.animate.bind(this));
     }
     
@@ -31,8 +26,8 @@ class App{
         // 이전 프레임을 지움
         this.camCtx.clearRect(0, 0, width, height);
         
-        // // 화면을 그림
-        // this.map.drawCamImg(this.camCtx);
+        // 화면을 그림
+        this.map.drawCamImg(this.camCtx);
 
         // 공 그리기
         for(let ballCount = 0; ballCount < this.balls.length; ballCount++){
@@ -40,30 +35,17 @@ class App{
                 width, height, this.balls);
         }
 
+        if(this.mouse.isDown){
+            this.camCtx.beginPath();
+            this.camCtx.strokeStyle = "rgb(0, 255, 0)";
+            this.camCtx.moveTo(this.balls[this.balls.length -1].getPositionX(), this.balls[this.balls.length -1].getPositionY());
+            this.camCtx.lineTo(this.mouse.x, this.mouse.y);
+            this.camCtx.stroke();
+            this.camCtx.closePath();
+        }
+
         window.requestAnimationFrame(this.animate.bind(this));
     }
-
-    startCamera() {
-        if (this.streaming) return;
-        navigator.mediaDevices.getUserMedia({video: true, audio: false})
-          .then(function(s) {
-          video.srcObject = s;
-          video.play();
-        })
-          .catch(function(err) {
-          console.log("An error occured! " + err);
-        });
-    }
-
-    streamCam(e){
-        if (!this.streaming) {
-        //   height = video.videoHeight / (video.videoWidth / width);
-        //   video.setAttribute("width", width);
-        //   video.setAttribute("height", height);
-          this.streaming = true;
-        }
-    }
-
         
     mouseDown(e){
         if (e.which == 1) {
@@ -82,10 +64,10 @@ class App{
         }
     }
 
-
     mouseUp(e){
         if (e.which == 1) {
             this.mouse.isDown = false;
+            this.balls[this.balls.length - 1].ballShooting(this.mouse.x, this.mouse.y);
         }
     }
 

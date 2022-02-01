@@ -37,12 +37,16 @@ export class Ball{
         // 공 그리기
         this.drawBallImg(camCtx);
 
+
         // 벽 충돌
         this.collisionWall(width, height);
+        // 흰색 영역 충돌
         this.collisionBall(balls);
+        // 공끼리 충돌
+        this.collisionWhite(camCtx);
     }
 
-    drawBallImg(canvasCtx){
+    drawBallImg(canvasCtx){ // 공 그리기
         canvasCtx.beginPath();
         canvasCtx.fillStyle = this.color;
         canvasCtx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, true);
@@ -66,6 +70,52 @@ export class Ball{
         if(this.position.y < this.radius){
             this.velocity.y *= this.e;
             this.position.y = this.radius;
+        }
+    }
+
+    ballShooting(x, y){
+        // 현재 포지션 - 마우스 포지션 / 10 = 속도
+        this.velocity.x = (this.position.x - x) / 10;
+        this.velocity.y = (this.position.y - y) / 10;
+    }
+
+    collisionWhite(camCtx){
+        let x_left = camCtx.getImageData(this.position.x - this.radius, this.position.y, 1, 1);
+        let x_right = camCtx.getImageData(this.position.x + this.radius, this.position.y, 1, 1);
+        let y_up = camCtx.getImageData(this.position.x, this.position.y - this.radius, 1, 1);
+        let y_down = camCtx.getImageData(this.position.x, this.position.y + this.radius, 1, 1);
+
+        if (x_left.data[0] == 255) {
+            this.whtitCollisionCheck(this.position.x - this.radius, this.position.y);
+        }
+        if (x_right.data[0] == 255) {
+            this.whtitCollisionCheck(this.position.x + this.radius, this.position.y);
+        }
+        if (y_up.data[0] == 255) {
+            this.whtitCollisionCheck(this.position.x, this.position.y + this.radius);
+        }
+        if (y_down.data[0] == 255) {
+            this.whtitCollisionCheck(this.position.x, this.position.y - this.radius);
+        }
+    }
+
+    whtitCollisionCheck(x, y){
+        let distX = this.position.x - x;
+        let distY = this.position.y - y;
+        let d = Math.sqrt((distX) * (distX) + (distY) * (distY));
+
+        if(d < this.radius + 1){
+            let nx = (x - this.position.x) / d;
+            let ny = (y - this.position.y) / d;
+            let p = 2 * (this.velocity.x * nx + this.velocity.y * ny) / (this.mass);
+
+            //stoping overlap 
+            this.position.x = this.radius * (this.position.x) / d;
+            this.position.y = this.radius * (this.position.y) / d;
+
+            //updating velocity to reflect collision 
+            this.velocity.x -= p * this.mass * nx;
+            this.velocity.y -= p * this.mass * ny;
         }
     }
 
@@ -109,5 +159,13 @@ export class Ball{
                 }
             }
         }
+    }
+
+    getPositionX(){
+        return this.position.x;
+    }
+
+    getPositionY(){
+        return this.position.y;
     }
 }
