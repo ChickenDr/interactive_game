@@ -36,14 +36,12 @@ export class Ball{
 		}
         // 공 그리기
         this.drawBallImg(camCtx);
-
-
-        // 벽 충돌
-        this.collisionWall(width, height);
         // 흰색 영역 충돌
         this.collisionBall(balls);
+        // 벽 충돌
+        this.collisionWall(width, height);
         // 공끼리 충돌
-        this.collisionWhite(camCtx);
+        // this.collisionWhite(camCtx);
     }
 
     drawBallImg(canvasCtx){ // 공 그리기
@@ -52,6 +50,23 @@ export class Ball{
         canvasCtx.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI, true);
         canvasCtx.fill();
         canvasCtx.closePath();
+    }
+
+    collisionGoal(goalx, goaly){
+        if(this.position.x + this.radius + 15 > goalx && this.position.x < goalx + this.radius + 15
+            && this.position.y + this.radius + 15 > goaly && this.position.y < goaly + this.radius + 15){
+            
+            //pythagoras 
+            let distX = this.position.x - goalx;
+            let distY = this.position.y - goaly;
+            let d = Math.sqrt((distX) * (distX) + (distY) * (distY));
+
+            //checking circle vs circle collision 
+            if(d < this.radius + 15){
+                return true;
+            }
+            return false;
+        }
     }
 
     collisionWall(width, height){
@@ -100,22 +115,29 @@ export class Ball{
     }
 
     whtitCollisionCheck(x, y){
-        let distX = this.position.x - x;
-        let distY = this.position.y - y;
-        let d = Math.sqrt((distX) * (distX) + (distY) * (distY));
+        if(this.position.x + this.radius + 1 > x
+            && this.position.x < x + this.radius +1
+            && this.position.y + this.radius + 1 > y
+            && this.position.y < y + this.radius + 1){
 
-        if(d < this.radius + 1){
-            let nx = (x - this.position.x) / d;
-            let ny = (y - this.position.y) / d;
-            let p = 2 * (this.velocity.x * nx + this.velocity.y * ny) / (this.mass);
-
-            //stoping overlap 
-            this.position.x = this.radius * (this.position.x) / d;
-            this.position.y = this.radius * (this.position.y) / d;
-
-            //updating velocity to reflect collision 
-            this.velocity.x -= p * this.mass * nx;
-            this.velocity.y -= p * this.mass * ny;
+        
+            let distX = this.position.x - x;
+            let distY = this.position.y - y;
+            let d = Math.sqrt((distX) * (distX) + (distY) * (distY));
+    
+            if(d < this.radius + 1){
+                let nx = (x - this.position.x) / d;
+                let ny = (y - this.position.y) / d;
+                let p = 2 * (this.velocity.x * nx + this.velocity.y * ny) / (this.mass);
+    
+                //stoping overlap 
+                this.position.x = this.radius * (this.position.x) / d;
+                this.position.y = this.radius * (this.position.y) / d;
+    
+                //updating velocity to reflect collision 
+                this.velocity.x -= p * this.mass * nx;
+                this.velocity.y -= p * this.mass * ny;
+            }
         }
     }
 

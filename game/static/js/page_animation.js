@@ -1,4 +1,4 @@
-import { Cam } from "./get_webcam.js";
+import { Cam } from "./draw_canvas.js";
 import {Ball} from "./ball.js";
 
 var width = 1280;
@@ -8,6 +8,7 @@ class App{
     constructor(){
         this.mouse = {x: 0, y: 0, isDown: false}; // 마우스 포지션, 눌려있는지
         this.balls = [];
+        this.goal = { x : Math.random() * (width - 10), y : Math.random() * (height - 10) };
 
         this.camCanvas = document.getElementById("cam-image"); // 캠
         this.camCtx = this.camCanvas.getContext('2d');
@@ -18,7 +19,7 @@ class App{
         this.camCanvas.onmousemove = this.getMousePosition.bind(this); // 마우스 위치
         
         this.map = new Cam(this.camCanvas.width, this.camCanvas.height);
-
+        
         window.requestAnimationFrame(this.animate.bind(this));
     }
     
@@ -26,25 +27,43 @@ class App{
         // 이전 프레임을 지움
         this.camCtx.clearRect(0, 0, width, height);
         
-        // 화면을 그림
-        this.map.drawCamImg(this.camCtx);
+        // 맵 그리기
+        // this.map.drawCamImg(this.camCtx);
+        this.map.drawMap(this.camCtx);
+        this.drawGoal();
 
         // 공 그리기
         for(let ballCount = 0; ballCount < this.balls.length; ballCount++){
             this.balls[ballCount].ballPhysics(this.mouse.isDown, ballCount, this.camCtx, 
                 width, height, this.balls);
+            if(this.balls[ballCount].collisionGoal(this.goal.x, this.goal.y)){
+                this.balls.splice(ballCount, 1);
+            }
         }
 
         if(this.mouse.isDown){
-            this.camCtx.beginPath();
-            this.camCtx.strokeStyle = "rgb(0, 255, 0)";
-            this.camCtx.moveTo(this.balls[this.balls.length -1].getPositionX(), this.balls[this.balls.length -1].getPositionY());
-            this.camCtx.lineTo(this.mouse.x, this.mouse.y);
-            this.camCtx.stroke();
-            this.camCtx.closePath();
+            this.dragBall(this.camCtx);
         }
 
         window.requestAnimationFrame(this.animate.bind(this));
+    }
+
+    drawGoal(){
+        this.camCtx.beginPath();
+		this.camCtx.strokeStyle = 'rgb(0, 255, 0)';
+		this.camCtx.arc(this.goal.x, this.goal.y, 15, 0, Math.PI * 2, true);
+		this.camCtx.lineWidth = 5;
+		this.camCtx.stroke();
+		this.camCtx.closePath();
+    }
+
+    dragBall(){
+        this.camCtx.beginPath();
+        this.camCtx.strokeStyle = "rgb(0, 255, 0)";
+        this.camCtx.moveTo(this.balls[this.balls.length -1].getPositionX(), this.balls[this.balls.length -1].getPositionY());
+        this.camCtx.lineTo(this.mouse.x, this.mouse.y);
+        this.camCtx.stroke();
+        this.camCtx.closePath();
     }
         
     mouseDown(e){
