@@ -29,7 +29,6 @@ with open(secret_file) as f:
     secrets = json.loads(f.read())
 
 def get_secret(setting, secrets=secrets):
-    """비밀 변수를 가져오거나 명시적 예외를 반환한다."""
     try:
         return secrets[setting]
     except KeyError:
@@ -44,6 +43,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 INTERNAL_IPS = ('127.0.0.1',)
 
+LOGIN_URL = '/accounts/home/signin/'
 # Application definition
 
 INSTALLED_APPS = [
@@ -53,9 +53,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'debug_toolbar',
+    'bootstrap4',
     'game',
-    'accounts'
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -66,8 +66,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
 ROOT_URLCONF = 'play_django.urls'

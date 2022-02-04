@@ -42,14 +42,14 @@ export class Cam{
 		];
 	}
 
-	drawMap(camCtx){
+	drawMap(canvasCtx){
 		let x = 0;
 		let y = 0;
 		
 		for(let row = 0; row < 25; row++){
 			for(let column = 0; column < 25; column++){
-				camCtx.fillStyle = this.type[this.pattern[row][column]][1];
-				camCtx.fillRect(x, y, this.width / 25, this.height / 25);
+				canvasCtx.fillStyle = this.type[this.pattern[row][column]][1];
+				canvasCtx.fillRect(x, y, this.width / 25, this.height / 25);
 				y += this.height / 25;
 			}
 			x += this.width / 25;
@@ -57,26 +57,26 @@ export class Cam{
 		}
 	}
 
-	// drawCamImg(camCtx) {
+	// drawCamImg(canvasCtx) {
 	// 	this.image.src = "http://127.0.0.1:8000/web_cam/";
 		
-	// 	camCtx.drawImage(this.image, 0, 0);
+	// 	canvasCtx.drawImage(this.image, 0, 0);
 	// }
 
-	drawCamImgToDot(camCtx){
+	drawCamImgToDot(canvasCtx){
 		for(let column = 0; x < this.width / 10; x++){
 			for (let y = 0; y < this.height / 10; y++) {
 				// cam 캔버스의 이미지를 데이터로 반환
-				let imageData = camCtx.getImageData(5 + x * 10, 5 + y * 10, 5, 5);
+				let imageData = canvasCtx.getImageData(5 + x * 10, 5 + y * 10, 5, 5);
 
 				let avgRgb = this.getAverageRGB(imageData);
 
-				camCtx.fillStyle = 'rgb(' + avgRgb.r + ', ' + avgRgb.g + ',' + avgRgb.b + ')';
+				canvasCtx.fillStyle = 'rgb(' + avgRgb.r + ', ' + avgRgb.g + ',' + avgRgb.b + ')';
 				
-				camCtx.beginPath();
-				camCtx.arc(5 + x * 10, 5 + y * 10, 5, 0, Math.PI * 2, true);
-				camCtx.fill();
-				camCtx.closePath();
+				canvasCtx.beginPath();
+				canvasCtx.arc(5 + x * 10, 5 + y * 10, 5, 0, Math.PI * 2, true);
+				canvasCtx.fill();
+				canvasCtx.closePath();
 			}
 		}
 	}

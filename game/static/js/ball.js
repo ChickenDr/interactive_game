@@ -12,7 +12,7 @@ export class Ball{
         this.fps = 1 / 60; // t = 1 / fps
     }
 
-    ballPhysics(mouse, ballCount, camCtx, width, height, balls){
+    ballPhysics(mouse, ballCount, canvasCtx, width, height, balls){
         if(!mouse || ballCount != balls.length - 1){ // 마우스가 눌려 있지 않거나 모든 공을 순회 하지 못했을 때
             // 항력 계산 =  -0.5 * 공기저항 계수 * 공기 밀도 * v^2 * rho 
             let fx = -0.5 * 1.22 * this.area * this.velocity.x * this.velocity.x * (this.velocity.x / Math.abs(this.velocity.x));
@@ -35,13 +35,13 @@ export class Ball{
             this.position.y += this.velocity.y * this.fps * 100;
 		}
         // 공 그리기
-        this.drawBallImg(camCtx);
-        // 흰색 영역 충돌
+        this.drawBallImg(canvasCtx);
+        // 공끼리 충돌
         this.collisionBall(balls);
         // 벽 충돌
         this.collisionWall(width, height);
-        // 공끼리 충돌
-        // this.collisionWhite(camCtx);
+        // 흰색 영역 충돌
+        // this.collisionWhite(canvasCtx);
     }
 
     drawBallImg(canvasCtx){ // 공 그리기
@@ -94,11 +94,11 @@ export class Ball{
         this.velocity.y = (this.position.y - y) / 10;
     }
 
-    collisionWhite(camCtx){
-        let x_left = camCtx.getImageData(this.position.x - this.radius, this.position.y, 1, 1);
-        let x_right = camCtx.getImageData(this.position.x + this.radius, this.position.y, 1, 1);
-        let y_up = camCtx.getImageData(this.position.x, this.position.y - this.radius, 1, 1);
-        let y_down = camCtx.getImageData(this.position.x, this.position.y + this.radius, 1, 1);
+    collisionWhite(canvasCtx){
+        let x_left = canvasCtx.getImageData(this.position.x - this.radius, this.position.y, 1, 1);
+        let x_right = canvasCtx.getImageData(this.position.x + this.radius, this.position.y, 1, 1);
+        let y_up = canvasCtx.getImageData(this.position.x, this.position.y - this.radius, 1, 1);
+        let y_down = canvasCtx.getImageData(this.position.x, this.position.y + this.radius, 1, 1);
 
         if (x_left.data[0] == 255) {
             this.whtitCollisionCheck(this.position.x - this.radius, this.position.y);

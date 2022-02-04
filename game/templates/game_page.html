@@ -1,14 +1,28 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Py_game</title>
-    <script type="module" src="/static/js/page_animation.js?ver=1"></script>
-</head>
-<body>
-    <canvas id="cam-image" width="1280px" height="700px"></canvas>
-</body>
-</html>
+{% extends 'main.html' %}
+
+{% block content %}
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+    </script>
+    <div>
+        <button type="button" class="btn btn-primary" id="start">start</button>
+    </div>
+    <div id = "gae">
+        <canvas id="game" width="1280px" height="700px"></canvas>  
+    </div>
+{% endblock content %}
