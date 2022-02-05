@@ -19,10 +19,10 @@
         }
         const csrftoken = getCookie('csrftoken');
     </script>
-    <div>
-        <button type="button" class="btn btn-primary" id="start">start</button>
+    <div id="start-div" class="d-flex justify-content-center align-items-center" style="height: 300px;">
+        <button id="start" type="button" class="btn btn-primary btn-lg">start</button>
     </div>
-    <div id = "gae">
-        <canvas id="game" width="1280px" height="700px"></canvas>  
+    <div class="d-flex justify-content-center" style="padding-top: 20px;">
+        <canvas id="game" width="1280" height="700"></canvas>  
     </div>
 {% endblock content %}

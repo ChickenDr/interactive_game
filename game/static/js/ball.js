@@ -1,47 +1,33 @@
 export class Ball{
-    constructor(x, y, radius, e, mass, color) {
+    constructor(x, y, radius, e, color) {
         this.position = {x: x, y: y};
         this.velocity = {x: 0, y: 0}; // m/s
         this.e = -e; // 공의 탄성
-        this.mass = mass; // kg 질량
         this.radius = radius; // 반지름
         this.color = color;
         this.area = (Math.PI * radius * radius) / 10000;
-
-        this.gravity = 1;
+        this.gravity = 0.3;
         this.fps = 1 / 60; // t = 1 / fps
+
+        this.bounced = 0;
     }
 
-    ballPhysics(mouse, ballCount, canvasCtx, width, height, balls){
-        if(!mouse || ballCount != balls.length - 1){ // 마우스가 눌려 있지 않거나 모든 공을 순회 하지 못했을 때
-            // 항력 계산 =  -0.5 * 공기저항 계수 * 공기 밀도 * v^2 * rho 
-            let fx = -0.5 * 1.22 * this.area * this.velocity.x * this.velocity.x * (this.velocity.x / Math.abs(this.velocity.x));
-            let fy = -0.5 * 1.22 * this.area * this.velocity.y * this.velocity.y * (this.velocity.y / Math.abs(this.velocity.y));
-        
-			fx = (isNaN(fx) ? 0 : fx);
-			fy = (isNaN(fy) ? 0 : fy);
+    ballPhysics(mouse, ballCount, canvasCtx, width, height, balls, blocks){
+        if(!mouse || ballCount != balls.length - 1){
+			// 공이 떨어지는 속도 v = v + g
+            this.velocity.y += this.gravity;
             
-			// 공 가속도 구하기
-			// F = ma or a = F/m
-			let ax = fx / this.mass;
-			let ay = (9.81 * this.gravity) + (fy / this.mass);
+			// 공위치 업데이트 p = p + v 
+            this.position.x += this.velocity.x
+            this.position.y += this.velocity.y
             
-			// 공이 떨어지는 속도 v = v + a(가속도) * t
-            this.velocity.x += ax * this.fps;
-            this.velocity.y += ay * this.fps;
-            
-			// 공위치 업데이트 p = p + v * t
-            this.position.x += this.velocity.x * this.fps * 100;
-            this.position.y += this.velocity.y * this.fps * 100;
 		}
-        // 공 그리기
-        this.drawBallImg(canvasCtx);
-        // 공끼리 충돌
-        this.collisionBall(balls);
         // 벽 충돌
         this.collisionWall(width, height);
-        // 흰색 영역 충돌
-        // this.collisionWhite(canvasCtx);
+        // 장애물 충돌
+        this.collisionBlock (blocks)
+        // 공 그리기
+        this.drawBallImg(canvasCtx);
     }
 
     drawBallImg(canvasCtx){ // 공 그리기
@@ -53,8 +39,10 @@ export class Ball{
     }
 
     collisionGoal(goalx, goaly){
-        if(this.position.x + this.radius + 15 > goalx && this.position.x < goalx + this.radius + 15
-            && this.position.y + this.radius + 15 > goaly && this.position.y < goaly + this.radius + 15){
+        if(this.position.x + this.radius + 15 > goalx 
+            && this.position.x < goalx + this.radius + 15
+            && this.position.y + this.radius + 15 > goaly 
+            && this.position.y < goaly + this.radius + 15){
             
             //pythagoras 
             let distX = this.position.x - goalx;
@@ -69,22 +57,54 @@ export class Ball{
         }
     }
 
+    collisionBlock(blocks){
+        for(let i = 0; i < blocks.length; i++){
+            let ballRight = this.position.x + this.radius;
+            let ballLeft = this.position.x - this.radius;
+            let ballTop = this.position.y - this.radius;
+            let ballBottom = this.position.y + this.radius;
+            let pos_x = this.position.x;
+            let pos_y = this.position.y;
+
+            if(ballLeft <= blocks[i].getMaxX() && ballLeft >= blocks[i].getX() && pos_y >= blocks[i].getY() && pos_y <= blocks[i].getMaxY()){
+                this.velocity.x *= this.e;
+                this.position.x += this.velocity.x;
+            }
+            else if(ballRight <= blocks[i].getMaxX() && ballRight >= blocks[i].getX() && pos_y >= blocks[i].getY() && pos_y <= blocks[i].getMaxY()){
+                this.velocity.x *= this.e;
+                this.position.x += this.velocity.x;
+            }
+            else if(pos_x <= blocks[i].getMaxX() && pos_x >= blocks[i].getX() && ballBottom >= blocks[i].getY() && ballBottom <= blocks[i].getMaxY()){
+                this.velocity.y *= this.e;
+                this.position.y += this.velocity.y;
+            }
+            else if(pos_x <= blocks[i].getMaxX() && pos_x >= blocks[i].getX() && ballTop >= blocks[i].getY() && ballTop <= blocks[i].getMaxY()){
+                this.velocity.y *= this.e;
+                this.position.y += this.velocity.y;
+            }
+        }
+    }
+
     collisionWall(width, height){
         if(this.position.x > width - this.radius){
             this.velocity.x *= this.e;
             this.position.x = width - this.radius;
+            this.bounced += 1;
         }
         if(this.position.y > height - this.radius){
             this.velocity.y *= this.e;
             this.position.y = height - this.radius;
+            this.bounced += 1;
         }
         if(this.position.x < this.radius){
             this.velocity.x *= this.e;
             this.position.x = this.radius;
+            this.bounced += 1;
         }
         if(this.position.y < this.radius){
             this.velocity.y *= this.e;
             this.position.y = this.radius;
+            this.bounced += 1;
         }
     }
 
@@ -94,93 +114,8 @@ export class Ball{
         this.velocity.y = (this.position.y - y) / 10;
     }
 
-    collisionWhite(canvasCtx){
-        let x_left = canvasCtx.getImageData(this.position.x - this.radius, this.position.y, 1, 1);
-        let x_right = canvasCtx.getImageData(this.position.x + this.radius, this.position.y, 1, 1);
-        let y_up = canvasCtx.getImageData(this.position.x, this.position.y - this.radius, 1, 1);
-        let y_down = canvasCtx.getImageData(this.position.x, this.position.y + this.radius, 1, 1);
-
-        if (x_left.data[0] == 255) {
-            this.whtitCollisionCheck(this.position.x - this.radius, this.position.y);
-        }
-        if (x_right.data[0] == 255) {
-            this.whtitCollisionCheck(this.position.x + this.radius, this.position.y);
-        }
-        if (y_up.data[0] == 255) {
-            this.whtitCollisionCheck(this.position.x, this.position.y + this.radius);
-        }
-        if (y_down.data[0] == 255) {
-            this.whtitCollisionCheck(this.position.x, this.position.y - this.radius);
-        }
-    }
-
-    whtitCollisionCheck(x, y){
-        if(this.position.x + this.radius + 1 > x
-            && this.position.x < x + this.radius +1
-            && this.position.y + this.radius + 1 > y
-            && this.position.y < y + this.radius + 1){
-
-        
-            let distX = this.position.x - x;
-            let distY = this.position.y - y;
-            let d = Math.sqrt((distX) * (distX) + (distY) * (distY));
-    
-            if(d < this.radius + 1){
-                let nx = (x - this.position.x) / d;
-                let ny = (y - this.position.y) / d;
-                let p = 2 * (this.velocity.x * nx + this.velocity.y * ny) / (this.mass);
-    
-                //stoping overlap 
-                this.position.x = this.radius * (this.position.x) / d;
-                this.position.y = this.radius * (this.position.y) / d;
-    
-                //updating velocity to reflect collision 
-                this.velocity.x -= p * this.mass * nx;
-                this.velocity.y -= p * this.mass * ny;
-            }
-        }
-    }
-
-    collisionBall(balls){
-        for(let i = 0; i < balls.length; i++){
-            let ball = balls[i];
-            if(this != ball){
-                //quick check for potential collisions using AABBs
-                if(this.position.x + this.radius + ball.radius > ball.position.x
-                    && this.position.x < ball.position.x + this.radius + ball.radius
-                    && this.position.y + this.radius + ball.radius > ball.position.y
-                    && this.position.y < ball.position.y + this.radius + ball.radius){
-                    
-                    //pythagoras 
-                    let distX = this.position.x - ball.position.x;
-                    let distY = this.position.y - ball.position.y;
-                    let d = Math.sqrt((distX) * (distX) + (distY) * (distY));
-        
-                    //checking circle vs circle collision 
-                    if(d < this.radius + ball.radius){
-                        let nx = (ball.position.x - this.position.x) / d;
-                        let ny = (ball.position.y - this.position.y) / d;
-                        let p = 2 * (this.velocity.x * nx + this.velocity.y * ny - ball.velocity.x * nx - ball.velocity.y * ny) / (this.mass + ball.mass);
-    
-                        // calulating the point of collision 
-                        let colPointX = ((this.position.x * ball.radius) + (ball.position.x * this.radius)) / (this.radius + ball.radius);
-                        let colPointY = ((this.position.y * ball.radius) + (ball.position.y * this.radius)) / (this.radius + ball.radius);
-                        
-                        //stoping overlap 
-                        this.position.x = colPointX + this.radius * (this.position.x - ball.position.x) / d;
-                        this.position.y = colPointY + this.radius * (this.position.y - ball.position.y) / d;
-                        ball.position.x = colPointX + ball.radius * (ball.position.x - this.position.x) / d;
-                        ball.position.y = colPointY + ball.radius * (ball.position.y - this.position.y) / d;
-    
-                        //updating velocity to reflect collision 
-                        this.velocity.x -= p * this.mass * nx;
-                        this.velocity.y -= p * this.mass * ny;
-                        ball.velocity.x += p * ball.mass * nx;
-                        ball.velocity.y += p * ball.mass * ny;
-                    }
-                }
-            }
-        }
+    getBounced(){
+        return this.bounced;
     }
 
     getPositionX(){
