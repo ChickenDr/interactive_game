@@ -5,27 +5,23 @@ export class Ball{
         this.e = -e; // 공의 탄성
         this.radius = radius; // 반지름
         this.color = color;
-        this.area = (Math.PI * radius * radius) / 10000;
         this.gravity = 0.3;
-        this.fps = 1 / 60; // t = 1 / fps
 
-        this.bounced = 0;
+        this.bounced = 1;
     }
 
     ballPhysics(mouse, ballCount, canvasCtx, width, height, balls, blocks){
         if(!mouse || ballCount != balls.length - 1){
-			// 공이 떨어지는 속도 v = v + g
+            // 공이 떨어지는 속도 v = v + g
             this.velocity.y += this.gravity;
-            
+            // 장애물 충돌
+            this.collisionBlock(blocks);
 			// 공위치 업데이트 p = p + v 
-            this.position.x += this.velocity.x
-            this.position.y += this.velocity.y
-            
+            this.position.x += this.velocity.x;
+            this.position.y += this.velocity.y;
 		}
         // 벽 충돌
         this.collisionWall(width, height);
-        // 장애물 충돌
-        this.collisionBlock (blocks)
         // 공 그리기
         this.drawBallImg(canvasCtx);
     }
@@ -39,10 +35,10 @@ export class Ball{
     }
 
     collisionGoal(goalx, goaly){
-        if(this.position.x + this.radius + 15 > goalx 
-            && this.position.x < goalx + this.radius + 15
-            && this.position.y + this.radius + 15 > goaly 
-            && this.position.y < goaly + this.radius + 15){
+        if(this.position.x + this.radius + 30 > goalx 
+            && this.position.x < goalx + this.radius + 30
+            && this.position.y + this.radius + 30 > goaly 
+            && this.position.y < goaly + this.radius + 30){
             
             //pythagoras 
             let distX = this.position.x - goalx;
@@ -59,28 +55,29 @@ export class Ball{
 
     collisionBlock(blocks){
         for(let i = 0; i < blocks.length; i++){
-            let ballRight = this.position.x + this.radius;
-            let ballLeft = this.position.x - this.radius;
-            let ballTop = this.position.y - this.radius;
-            let ballBottom = this.position.y + this.radius;
-            let pos_x = this.position.x;
-            let pos_y = this.position.y;
+            const minX = blocks[i].getX() - this.radius;
+            const maxX = blocks[i].getMaxX() + this.radius;
+            const minY = blocks[i].getY() - this.radius;
+            const maxY = blocks[i].getMaxY() + this.radius;
 
-            if(ballLeft <= blocks[i].getMaxX() && ballLeft >= blocks[i].getX() && pos_y >= blocks[i].getY() && pos_y <= blocks[i].getMaxY()){
-                this.velocity.x *= this.e;
-                this.position.x += this.velocity.x;
-            }
-            else if(ballRight <= blocks[i].getMaxX() && ballRight >= blocks[i].getX() && pos_y >= blocks[i].getY() && pos_y <= blocks[i].getMaxY()){
-                this.velocity.x *= this.e;
-                this.position.x += this.velocity.x;
-            }
-            else if(pos_x <= blocks[i].getMaxX() && pos_x >= blocks[i].getX() && ballBottom >= blocks[i].getY() && ballBottom <= blocks[i].getMaxY()){
-                this.velocity.y *= this.e;
-                this.position.y += this.velocity.y;
-            }
-            else if(pos_x <= blocks[i].getMaxX() && pos_x >= blocks[i].getX() && ballTop >= blocks[i].getY() && ballTop <= blocks[i].getMaxY()){
-                this.velocity.y *= this.e;
-                this.position.y += this.velocity.y;
+            if(this.position.x > minX && this.position.x < maxX && this.position.y > minY && this.position.y < maxY){
+                const x1 = Math.abs(minX - this.position.x);
+                const x2 = Math.abs(this.position.x - maxX);
+                const y1 = Math.abs(minY - this.position.y);
+                const y2 = Math.abs(this.position.x - maxY);
+
+                const min1 = Math.min(x1, x2);
+                const min2 = Math.min(y1, y2);
+                const min = Math.min(min1, min2);
+
+                if(min == min1){
+                    this.velocity.x *= this.e;
+                    this.position.x += this.velocity.x;
+                }
+                else if(min == min2){
+                    this.velocity.y *= this.e;
+                    this.position.x += this.velocity.y;
+                }
             }
         }
     }
@@ -110,8 +107,8 @@ export class Ball{
 
     ballShooting(x, y){
         // 현재 포지션 - 마우스 포지션 / 10 = 속도
-        this.velocity.x = (this.position.x - x) / 10;
-        this.velocity.y = (this.position.y - y) / 10;
+        this.velocity.x = (this.position.x - x) / 7;
+        this.velocity.y = (this.position.y - y) / 7;
     }
 
     getBounced(){

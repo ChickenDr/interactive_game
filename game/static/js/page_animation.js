@@ -3,18 +3,22 @@ import {Ball} from "./ball.js";
 
 var start_div = document.getElementById('start-div');
 var start = document.getElementById('start');
+var alert = document.getElementById('alert');
 
 class App{
     constructor(){
         this.canvas = document.getElementById("game"); // 캠
         this.canvasCtx = this.canvas.getContext('2d');
 
-        this.width = this.canvas.width;
-        this.height = this.canvas.height;
+        this.canvas.width = window.innerWidth - 100;
+        this.canvas.height = window.innerHeight - 100;
+
+        this.startPos = this.canvas.width / 3 - 100;
+        this.galPos = this.startPos * 2;
 
         this.mouse = {x: 0, y: 0, isDown: false}; // 마우스 포지션, 눌려있는지
         this.balls = [];
-        this.goal = { x : Math.random() * (this.width - 10), y : Math.random() * (this.height - 10) };
+        this.goal = { x : Math.random() * (this.canvas.width - this.galPos) + (this.galPos + 40), y : Math.random() * (this.canvas.height - 40) + 40};
         this.score = 0;
 
         // evnet
@@ -22,37 +26,38 @@ class App{
         this.canvas.onmouseup = this.mouseUp.bind(this); // 마우스 누르다 땜
         this.canvas.onmousemove = this.getMousePosition.bind(this); // 마우스 위치
         
-        this.map = new Map(this.width, this.height);
-        
+        this.map = new Map(this.canvas.width, this.canvas.height);
+        this.map.setBlocks();
+
         window.requestAnimationFrame(this.animate.bind(this));
     }
     
     animate(t) { // 애니메이션을 실제로 구동시키는 함수    
         if(this.gamover){
-            this.canvasCtx.clearRect(0, 0, this.width, this.height);
+            this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
             start_div.style.height = 300;
             start.style.display = '';
             return;
         }
 
         else{
-            this.canvasCtx.clearRect(0, 0, this.width, this.height); // 이전 프레임을 지워준다
+            this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height); // 이전 프레임을 지워준다
 
-            this.map.drawMap(this.canvasCtx);
+            this.map.drawMap(this.canvasCtx, this.startPos);
             this.drawGoal();
 
-            // 공 그리기
+            // 공 핸들링
             for(let ballCount = 0; ballCount < this.balls.length; ballCount++){
                 this.balls[ballCount].ballPhysics(this.mouse.isDown, ballCount,
-                     this.canvasCtx, this.width, this.height, this.balls, this.map.getBlocks());
-                
-                // if(this.balls[ballCount].getBounced() == 3){
-                //     this.alertGamover();
-                // }
+                     this.canvasCtx, this.canvas.width, this.canvas.height, this.balls, this.map.getBlocks());
+
+                if(this.balls[ballCount].getBounced() > 3){
+                    this.alertGamover();
+                }
 
                 if(this.balls[ballCount].collisionGoal(this.goal.x, this.goal.y)){
+                    this.score = 100 * this.balls[ballCount].getBounced();
                     this.balls.splice(ballCount, 1);
-                    this.score += 100;
                 }
             }
 
@@ -68,6 +73,7 @@ class App{
         swal("Game Over!", "your score: " + this.score, "error");
 
         this.gamover = true;
+        alert.style.display = 'none';
         $.ajax({
             url : '/game/',
             type : 'POST',
@@ -85,10 +91,10 @@ class App{
 
     drawGoal(){
         this.canvasCtx.beginPath();
-		this.canvasCtx.strokeStyle = 'rgb(0, 255, 0)';
 		this.canvasCtx.lineWidth = 3;
-		this.canvasCtx.arc(this.goal.x, this.goal.y, 15, 0, Math.PI * 2, true);
-		this.canvasCtx.stroke();
+		this.canvasCtx.fillStyle = "#5352ed";
+        this.canvasCtx.arc(this.goal.x, this.goal.y, 30, 0, Math.PI * 2, true);
+		this.canvasCtx.fill()
 		this.canvasCtx.closePath();
     }
 
@@ -103,18 +109,20 @@ class App{
         
     mouseDown(e){
         if (e.which == 1) {
-            this.mouse.isDown = true;
-            // 색상 범위
-            let max = 255;
-            let min = 20;
-            
-            let rgb = {r: 0, g: 0, b: 0};
-            rgb.r = 75 + Math.floor(Math.random() * (max - min) - min);
-            rgb.g = 75 + Math.floor(Math.random() * (max - min) - min);
-            rgb.b = 75 + Math.floor(Math.random() * (max - min) - min);
-            // 공 추가 (마우스 위치 x, y, 반지름, 탄성, 질량, 색)
-            this.balls.push(new Ball(this.mouse.x, this.mouse.y, 10, 0.5, 
-                "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")"));
+            if(this.mouse.x < this.startPos){
+                this.mouse.isDown = true;
+                // 색상 범위
+                let max = 255;
+                let min = 20;
+                
+                let rgb = {r: 0, g: 0, b: 0};
+                rgb.r = 75 + Math.floor(Math.random() * (max - min) - min);
+                rgb.g = 75 + Math.floor(Math.random() * (max - min) - min);
+                rgb.b = 75 + Math.floor(Math.random() * (max - min) - min);
+                // 공 추가 (마우스 위치 x, y, 반지름, 탄성, 질량, 색)
+                this.balls.push(new Ball(this.mouse.x, this.mouse.y, 15, 0.5, 
+                    "rgb(" + rgb.r + "," + rgb.g + "," + rgb.b + ")"));
+            }
         }
     }
 
@@ -132,9 +140,11 @@ class App{
 }
 
 window.onload = () => {
+    alert.style.display = 'none';
     start.onclick = function() {
         start_div.style.height = 0;
         start.style.display = 'none';
+        alert.style.display = '';
         new App();
     }
 
