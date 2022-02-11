@@ -56,7 +56,7 @@ class App{
                 }
 
                 if(this.balls[ballCount].collisionGoal(this.goal.x, this.goal.y)){
-                    this.score = 100 * this.balls[ballCount].getBounced();
+                    this.score += 100 * this.balls[ballCount].getBounced();
                     this.balls.splice(ballCount, 1);
                 }
             }

@@ -1,0 +1,26 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container " style="margin-top: 5%;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">user</th>
+                <th scope="col">score</th>
+                <th scope="col">date</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for rank in rank %}
+                    {% if  {{ forloop.counter }} < 30 %}
+                        <tr>
+                            <td>{{ rank.user }}</td>
+                            <td>{{ rank.score }}</td>
+                            <td>{{ rank.date }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+    </table>
+</div>
+{% endblock content %}
