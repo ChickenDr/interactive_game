@@ -12,13 +12,11 @@
             </thead>
             <tbody>
                 {% for rank in rank %}
-                    {% if  {{ forloop.counter }} < 30 %}
                         <tr>
                             <td>{{ rank.user }}</td>
                             <td>{{ rank.score }}</td>
                             <td>{{ rank.date }}</td>
                         </tr>
-                    {% endif %}
                 {% endfor %}
             </tbody>
     </table>
